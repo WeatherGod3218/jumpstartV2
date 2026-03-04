@@ -1,0 +1,9 @@
+---
+
+services:
+  jumpstart:
+    build: .
+    container_name: Jumpstart
+    ports:
+      - "8000:8000"
+    
