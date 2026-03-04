@@ -2,6 +2,8 @@ name: Sonarqube
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 
