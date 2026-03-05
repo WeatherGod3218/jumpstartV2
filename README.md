@@ -12,17 +12,27 @@ This is a backend re-write of the previous jumpstart.
 See it live [here](https://jumpstart.csh.rit.edu)!
 
 ## Setup
+1. Make sure you have docker installed
+    (OPTIONAL): You can use docker compose as well!!
+2. Copy the .env.template file, rename it to .env and place it in the root folder
+3. Ask an RTP for jumpstart secrets, add them to the .env accordingly
 
-1. Setup .env
 
-```bash
-cp .env.template .env
-```
 
+## Run 
+1. Build the docker file
+'''
+    docker build -t Jumpstart .
+'''
+2. Run the newly built docker on port 8000
+'''
+    docker run -p 8080:80 myuser/myimage:1.0
+'''
+
+## Alternatively, you can run the docker compose file as well
+'''
+    docker compose up
+'''
 adjust .env config variables as needed.
 
 
-## Install
-
-Uhhh
-Figure it out!
