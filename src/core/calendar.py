@@ -8,9 +8,10 @@ import requests
 import recurring_ical_events
 from icalendar import Calendar
 
-CALENDAR_URL = "https://calendar.google.com/calendar/ical/rti648k5hv7j3ae3a3rum8potk%40group.calendar.google.com/public/basic.ics"
-OUTLOOK_DAYS = 7 #The amount of days to go through
-EVENT_MAXIMUM = 10 #The amount of events needed to be displayed
+from config import CALENDAR_URL
+from config import CALENDAR_OUTLOOK_DAYS
+from config import CALENDAT_EVENT_MAXIMUM
+
 
 logger: Logger = getLogger(__name__)
 operation_start_time = time.perf_counter()
@@ -24,6 +25,10 @@ def report_timing(displayTag : str):
     print(operation_timestamp, "::", displayTag)
 
 def format_events(events : list):
+    """
+    Formats a parsed list of events and returns the html implementation
+    """
+    
     return
 
 def get_future_events_ical() -> list:
@@ -51,12 +56,12 @@ def get_future_events_ical() -> list:
         current_time = datetime.now()
         returned_events = []
 
-        while (current_day < OUTLOOK_DAYS) and (len(found_events) < EVENT_MAXIMUM):
+        while (current_day < CALENDAR_OUTLOOK_DAYS) and (len(found_events) < CALENDAT_EVENT_MAXIMUM):
             fetched_daily_events : list = recurring_ical_events.of(cal).between(current_time, current_time + timedelta(days=1))
             report_timing("Sorted events on day " + str(current_day))
 
             for event in fetched_daily_events:
-                if len(found_events) >= EVENT_MAXIMUM:
+                if len(found_events) >= CALENDAT_EVENT_MAXIMUM:
                     break
                 else:
                     found_events.append(event)
@@ -89,6 +94,7 @@ get_future_events_ical()
         orderBy='startTime',
     ).execute()
     events = events_result.get('items', [])
+    
 def calendar():
  # Call the Calendar API
     now = datetime.now()
