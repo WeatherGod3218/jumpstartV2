@@ -7,7 +7,7 @@ import requests
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 
-from core import google, slack
+from core import calendar, slack
 
 logger: Logger = getLogger(__name__)
 
