@@ -23,7 +23,7 @@ class CalendarInfo:
         self.Name : str = name
         self.Date : arrow.arrow = arrow.get(date) # Arrow has way cooler stuff
 
-def report_timing(displayTag : str) -> None:
+def report_timing(display_tag : str) -> None:
     """
     Helper function to report how long an operation took since the lastly established operation start time.
 
@@ -32,7 +32,7 @@ def report_timing(displayTag : str) -> None:
     """
     
     operation_timestamp = time.perf_counter() - operation_start_time
-    logger.info(operation_timestamp, "::", displayTag)
+    logger.info(operation_timestamp, "::", display_tag)
 
 def format_events(events : list[CalendarInfo]) -> dict:
     """
@@ -45,14 +45,14 @@ def format_events(events : list[CalendarInfo]) -> dict:
         dict: Returns a dictionary with the "data" key mapping to the HTML data.
     """
 
-    currentDate : datetime.date = datetime.datetime.now(ZoneInfo(CALENDAR_TIMEZONE))
+    current_date : datetime.date = datetime.datetime.now(ZoneInfo(CALENDAR_TIMEZONE))
     final_events = "<br>"
 
     if not events:
         print('No upcoming events found.')
 
     for event in events:
-        formatted = event.Date.humanize(['year']) if event.Date > currentDate else "Happening Now!"
+        formatted = event.Date.humanize(['year']) if event.Date > current_date else "Happening Now!"
         event.Date = formatted
         final_events += (
             """<div class='calendar-event-container-lvl2'><span class='calendar-text-date'> """
@@ -99,8 +99,8 @@ def get_future_events_ical() -> list[CalendarInfo]:
                 if len(found_events) >= CALENDAR_EVENT_MAXIMUM:
                     break
                 else:
-                    newEvent = CalendarInfo(event.get("SUMMARY"), event.get("DTSTART").dt)
-                    found_events.append(newEvent)
+                    new_event = CalendarInfo(event.get("SUMMARY"), event.get("DTSTART").dt)
+                    found_events.append(new_event)
 
             current_time += datetime.timedelta(days=1)
             current_day += 1
