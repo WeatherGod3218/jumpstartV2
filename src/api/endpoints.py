@@ -4,15 +4,16 @@ import random
 import textwrap
 import requests
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Form
 from fastapi.responses import JSONResponse
 
 from core import slack
 from src.core import cshcalendar
 
 logger: Logger = getLogger(__name__)
-
 router: APIRouter = APIRouter()
+
+
 
 @router.get("/calendar")
 def get_calendar() -> JSONResponse:
@@ -32,15 +33,6 @@ def get_announcement() -> JSONResponse:
 	pass
 
 
-@router.put("/announcement")
-def update_announcement() -> JSONResponse:
-	"""
-	Updates an existing announcement.
-	"""
-
-	pass
-
-
 @router.get("/harold")
 def get_harold() -> JSONResponse:
 	"""
@@ -50,11 +42,12 @@ def get_harold() -> JSONResponse:
 	pass
 
 
-@router.put("/harold")
-def update_harold() -> JSONResponse:
+@router.post("/slack/message_actions")
+async def message_actions(payload: str = Form(...)):
 	"""
-	Updates harold data.
+	Handles slack message action.
 	"""
+
 
 	pass
 

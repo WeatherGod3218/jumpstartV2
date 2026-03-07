@@ -1,5 +1,4 @@
-mkdocs
-mkdocs-material
+zensical==1.6.1
 mkdocstrings
 mkdocstrings-python
 mkdocs-minify-plugin
