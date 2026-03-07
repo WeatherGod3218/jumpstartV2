@@ -1,9 +1,9 @@
 from logging import getLogger, Logger
 
 import json
+import httpx
 import random
 import textwrap
-import requests
 
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import JSONResponse
@@ -110,13 +110,13 @@ async def message_actions(payload: str = Form(...)) -> JSONResponse:
 			slack.add_announcement(form_json.get("text", None))
 
 			if response_url:
-				requests.post(
+				await httpx.post(
 					response_url,
 					json={"text": "Posting right now :^)", "replace_original": True},
 				)
 		else:
 			if response_url:
-				requests.post(
+				await httpx.post(
 					response_url,
 					json={"text": "Okay :( maybe next time", "replace_original": True},
 				)
@@ -129,7 +129,7 @@ async def message_actions(payload: str = Form(...)) -> JSONResponse:
 
 
 @router.get("/showerthoughts")
-def showerthoughts() -> JSONResponse:
+async def showerthoughts() -> JSONResponse:
 	"""
 	Returns a random shower thought from the Reddit API.
 
@@ -142,17 +142,20 @@ def showerthoughts() -> JSONResponse:
 	try:
 		logger.info("Fetching shower thoughts from Reddit API...")
 
-		reddit_data: requests.Response = requests.get(
-			"https://www.reddit.com/r/showerthoughts/top.json",
-			headers={"User-agent": "Showerthoughtbot 0.1"},
-		)
+		async with httpx.AsyncClient() as client:
+			reddit_data: httpx.Response = await client.get(
+				"https://www.reddit.com/r/showerthoughts/top.json",
+				headers={"User-agent": "Showerthoughtbot 0.1"},
+			)
 
-		if len(reddit_data.json()["data"]["children"]) == 0:
+			reddit_json = reddit_data.json()
+
+		if len(reddit_json["data"]["children"]) == 0:
 			logger.warning("No shower thoughts found in Reddit API response.")
 			return JSONResponse(response)
 
 		shower_thought: str = textwrap.fill(
-			(random.choice(reddit_data.json()["data"]["children"])["data"]["title"]), 50
+			(random.choice(reddit_json["data"]["children"])["data"]["title"]), 50
 		)
 
 		response["data"] = shower_thought

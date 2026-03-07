@@ -19,10 +19,10 @@ CALENDAR_TIMEZONE: str = os.getenv("CALENDAR_TIMEZONE", "America/New_York")
 CALENDAR_API_KEY: str = os.getenv("CALENDAR_API_KEY", None)
 
 if SLACK_API_TOKEN in (None, ""):
-	Exception("Missing SLACK_API_TOKEN")
+	raise Exception("Missing SLACK_API_TOKEN")
 
 if CALENDAR_API_KEY in (None, "") and CALENDAR_URL in (None, ""):
-	Exception("Missing CALENDAR_API_KEY or CALENDAR_URL")
+	raise Exception("Missing CALENDAR_API_KEY or CALENDAR_URL")
 
 with open(os.path.join(BASE_DIR, "static", "slack", "dm_request_template.json")) as f:
 	SLACK_DM_TEMPLATE = json.load(f)

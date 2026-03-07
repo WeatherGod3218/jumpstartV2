@@ -1,5 +1,4 @@
 import re
-import json
 
 from logging import getLogger, Logger
 
@@ -11,7 +10,12 @@ from config import SLACK_API_TOKEN, SLACK_JUMPSTART_MESSAGE, SLACK_DM_TEMPLATE
 
 logger: Logger = getLogger(__name__)
 
-client: AsyncWebClient = AsyncWebClient(token=SLACK_API_TOKEN)
+client: AsyncWebClient | None = None
+
+try:
+	client = AsyncWebClient(token=SLACK_API_TOKEN)
+except Exception as e:
+	logger.error(f"Failed to initialize Slack client: {e}")
 
 announcements: list[str] = ["Welcome to Jumpstart!"]
 
