@@ -14,14 +14,18 @@ logger: Logger = getLogger(__name__)
 router: APIRouter = APIRouter()
 
 
-
 @router.get("/calendar")
 def get_calendar() -> JSONResponse:
 	"""
 	Returns calendar data.
+
+	Returns:
+		JSONResponse: A JSON response containing the calendar data.
 	"""
 
-	get_future_events_ical: list[cshcalendar.CalendarInfo] = cshcalendar.get_future_events_ical()
+	get_future_events_ical: list[cshcalendar.CalendarInfo] = (
+		cshcalendar.get_future_events_ical()
+	)
 	formatted_events: dict = cshcalendar.format_events(get_future_events_ical)
 
 	return JSONResponse(formatted_events)
@@ -31,6 +35,9 @@ def get_calendar() -> JSONResponse:
 def get_announcement() -> JSONResponse:
 	"""
 	Returns announcement data.
+
+	Returns:
+		JSONResponse: A JSON response containing the announcement data.
 	"""
 
 	return JSONResponse({"data": slack.get_announcement()})
@@ -40,6 +47,12 @@ def get_announcement() -> JSONResponse:
 async def slack_events(request: Request) -> JSONResponse:
 	"""
 	Handles slack events.
+
+	Args:
+		request (Request): The incoming request from Slack.
+
+	Returns:
+		JSONResponse: A JSON response indicating the result of the event handling.
 	"""
 
 	try:
@@ -50,7 +63,7 @@ async def slack_events(request: Request) -> JSONResponse:
 
 			if body.get("type") == "url_verification":
 				return JSONResponse({"challenge": body.get("challenge")})
-			
+
 		body: dict = await request.json()
 		if not body:
 			return JSONResponse({"challenge": body.get("challenge")})
@@ -60,7 +73,7 @@ async def slack_events(request: Request) -> JSONResponse:
 
 		if event.get("subtype", None) is not None:
 			return JSONResponse({"status": "ignored"})
-		
+
 		if not event.get("channel", "") in slack.WATCHED_CHANNELS:
 			return JSONResponse({"status": "ignored"})
 
@@ -73,9 +86,15 @@ async def slack_events(request: Request) -> JSONResponse:
 
 
 @router.post("/slack/message_actions")
-async def message_actions(payload: str = Form(...)):
+async def message_actions(payload: str = Form(...)) -> JSONResponse:
 	"""
 	Handles slack message action.
+
+	Args:
+		payload (str): The payload from the Slack message action.
+
+	Returns:
+		JSONResponse: A JSON response indicating the result of the action.
 	"""
 
 	try:
@@ -91,15 +110,21 @@ async def message_actions(payload: str = Form(...)):
 			slack.add_announcement(form_json.get("text", None))
 
 			if response_url:
-				requests.post(response_url, json={"text": "Posting right now :^)", "replace_original": True})
+				requests.post(
+					response_url,
+					json={"text": "Posting right now :^)", "replace_original": True},
+				)
 		else:
 			if response_url:
-				requests.post(response_url, json={"text": "Okay :( maybe next time", "replace_original": True})
+				requests.post(
+					response_url,
+					json={"text": "Okay :( maybe next time", "replace_original": True},
+				)
 
 	except Exception as e:
 		logger.error(f"Error in message_actions: {e}")
 		return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
-	
+
 	return JSONResponse({"status": "success"}, status_code=200)
 
 
@@ -111,7 +136,7 @@ def showerthoughts() -> JSONResponse:
 	Returns:
 		JSONResponse: A JSON response containing a random shower thought.
 	"""
-	
+
 	response: dict = {"data": "No shower thoughts found."}
 
 	try:
@@ -125,7 +150,7 @@ def showerthoughts() -> JSONResponse:
 		if len(reddit_data.json()["data"]["children"]) == 0:
 			logger.warning("No shower thoughts found in Reddit API response.")
 			return JSONResponse(response)
-		
+
 		shower_thought: str = textwrap.fill(
 			(random.choice(reddit_data.json()["data"]["children"])["data"]["title"]), 50
 		)
@@ -133,5 +158,5 @@ def showerthoughts() -> JSONResponse:
 		response["data"] = shower_thought
 	except Exception as e:
 		logger.error(f"Error fetching shower thoughts: {e}")
-	
+
 	return JSONResponse(response)

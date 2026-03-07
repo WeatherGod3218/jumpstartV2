@@ -17,73 +17,120 @@ announcements: list[str] = ["Welcome to Jumpstart!"]
 
 
 def clean_text(raw: str) -> str:
-    """
-    Strip Slack mrkdwn, HTML entities, and formatting characters.
+	"""
+	Strip Slack mrkdwn, HTML entities, and formatting characters.
 
-    Args:
-        raw: The raw text to be cleaned.
-    """
+	Args:
+		raw (str): The raw text to be cleaned.
 
-    text: str = re.sub(r"<[^>]+>", "", str(raw), flags=re.IGNORECASE)
-    text: str = re.sub(r"&lt;.*?&gt;", "", text, flags=re.IGNORECASE)
-    return text. replace("*", ""). replace("_", ""). replace("`", "").strip()
+	Returns:
+		str: The cleaned text.
+	"""
+
+	text: str = re.sub(r"<[^>]+>", "", str(raw), flags=re.IGNORECASE)
+	text = re.sub(r"&lt;.*?&gt;", "", text, flags=re.IGNORECASE)
+	return text.replace("*", "").replace("_", "").replace("`", "").strip()
 
 
 async def gather_emojis() -> dict:
+	"""
+	Gathers emojis from Slack and returns a mapping of emoji names to their URLs.
 
-    logger.info("Gathering emojis from slack!")
-    
-    try:
-        emoji_request: dict = await client.emoji_list()
-        assert emoji_request.get("ok", False)
+	Returns:
+		dict: A mapping of emoji names to their URLs.
+	"""
 
-        return emoji_request.get("emoji", {})
-    except Exception as e:
-        logger.error(f"Error gathering emojis: {e}")
-    
-    return {}
+	logger.info("Gathering emojis from slack!")
+
+	try:
+		emoji_request: dict = await client.emoji_list()
+		assert emoji_request.get("ok", False)
+
+		return emoji_request.get("emoji", {})
+	except Exception as e:
+		logger.error(f"Error gathering emojis: {e}")
+
+	return {}
 
 
 async def request_upload_via_dm(user_id: str, announcement_text: str) -> None:
+	"""
+	Sends a DM to the user with the announcement text and a prompt to post it to Jumpstart.
 
-    logger.info("Requesting upload announcement permission!")
+	Args:
+		user_id (str): The ID of the user to send the DM to.
+		announcement_text (str): The text of the announcement to be posted.
+	"""
 
-    try:
-        message: dict = SLACK_DM_TEMPLATE.copy()
-        
-        message[0]["text"]["text"] += announcement_text
-        message[1]["elements"][0]["value"] = {"text": announcement_text, "user": user_id}
+	logger.info("Requesting upload announcement permission!")
 
-        await client.chat_postMessage(channel=user_id, text=SLACK_JUMPSTART_MESSAGE, blocks=message)
-    except Exception as e:
-        logger.error(f"Error messaging user {user_id}: {e}")
+	try:
+		message: dict = SLACK_DM_TEMPLATE.copy()
+
+		message[0]["text"]["text"] += announcement_text
+		message[1]["elements"][0]["value"] = {
+			"text": announcement_text,
+			"user": user_id,
+		}
+
+		await client.chat_postMessage(
+			channel=user_id, text=SLACK_JUMPSTART_MESSAGE, blocks=message
+		)
+	except Exception as e:
+		logger.error(f"Error messaging user {user_id}: {e}")
 
 
 def convert_user_response_to_bool(message_data: dict) -> bool:
+	"""
+	Converts a Slack message action response to a boolean indicating whether the user approved the announcement.
 
-    user_response: bool = False
+	Args:
+		message_data (dict): The data from the Slack message action payload.
 
-    try:
-        user_response = message_data.get("actions", []).get(0, {}).get("action_id", "no_j") == "yes_j"
-    except Exception as e:
-        logger.error(f"Failed to parse data: {e}")
+	Returns:
+		bool: True if the user approved the announcement, False otherwise.
+	"""
 
-    return user_response
+	user_response: bool = False
+
+	try:
+		user_response = (
+			message_data.get("actions", []).get(0, {}).get("action_id", "no_j")
+			== "yes_j"
+		)
+	except Exception as e:
+		logger.error(f"Failed to parse data: {e}")
+
+	return user_response
 
 
 def get_announcement() -> str | None:
-    if len(announcements) == 0:
-        return None
-    
-    if len(announcements) == 1:
-        return announcements[0]
+	"""
+	Returns the next announcement in the queue.
 
-    return announcements.pop(0)
+	Returns:
+		str | None: The next announcement text, or None if there are no announcements.
+	"""
+
+	if len(announcements) == 0:
+		return None
+
+	if len(announcements) == 1:
+		return announcements[0]
+
+	return announcements.pop(0)
 
 
 def add_announcement(announcement_text: str) -> None:
-    if announcement_text is None or announcement_text.strip() == "":
-        logger.warning("Attempted to add empty announcement, skipping!")
-        return
-    
-    announcements.append(announcement_text)
+	"""
+	Adds an announcement to the queue.
+
+	Args:
+		announcement_text (str): The text of the announcement to be added.
+	"""
+
+	if announcement_text is None or announcement_text.strip() == "":
+		logger.warning("Attempted to add empty announcement, skipping!")
+		return
+
+	announcements.append(announcement_text)

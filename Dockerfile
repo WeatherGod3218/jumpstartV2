@@ -1,7 +1,10 @@
 FROM ghcr.io/astral-sh/uv:python3.14-alpine AS docbuilder
 
-COPY . /jumpstartdocs
 WORKDIR /jumpstartdocs
+
+COPY mkdocs.yml .
+COPY docs ./docs
+COPY src ./src
 
 RUN uv pip install --no-cache-dir -r ./docs/requirements.txt --system && \
     zensical build
